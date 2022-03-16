@@ -1,3 +1,5 @@
+module GameOfLife where
+
 import Graphics.Gloss.Interface.Pure.Game
 
 -- Cell state
@@ -6,8 +8,7 @@ data State = Alive | Dead
 -- Board - array of cells of set size
 data Board = Board {
   size :: Int,
-  cells :: [State]
-}
+  cells :: [State]}
 
 -- Errors while parsing
 data Error = ConfigurationError String | SizeError String
@@ -26,7 +27,7 @@ fps = 1
 
 -- Set board configuration from text
 setBoard :: String -> Either Error Board
-setBoard configuration -> Left (ConfigurationError "Wrong configuration")
+setBoard configuration = Left (ConfigurationError "Wrong configuration")
 
 -- Get cell state by its position in array
 getState :: Int -> State
@@ -42,18 +43,19 @@ updateCell state aliveNeighbours = state
 
 -- Update all cells on board
 updateBoard :: Float -> Board -> Board
-updateBoard _ board -> board
+updateBoard _ board = board
 
 -- Draw a picture of current board state
 drawApp :: Board -> Picture
 drawApp board = Blank
 
 -- Handle IO events
-handleEvent :: Event -> AppState -> AppState
+handleEvent :: Event -> Board -> Board
 handleEvent _ state = state
 
-main :: IO ()
-  boardConfFile <- readLine
+run :: IO ()
+run = do
+  boardConfFile <- getLine
   configuration <- readFile boardConfFile
   case setBoard configuration of
     Left (ConfigurationError message) -> putStrLn message
