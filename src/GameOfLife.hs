@@ -9,6 +9,7 @@ data State = Alive | Dead
 data Board = Board {
   size :: Int,
   cells :: [State]}
+  --possibly current iteration
 
 -- Errors while parsing
 data Error = ConfigurationError String | SizeError String
@@ -25,21 +26,29 @@ bgColor = black
 fps :: Int
 fps = 1
 
--- Set board configuration from text
+-- Parse text and get board configuration
 setBoard :: String -> Either Error Board
 setBoard configuration = Left (ConfigurationError "Wrong configuration")
 
 -- Get cell state by its position in array
-getState :: Int -> State
-getState pos = Dead
+getState :: Int -> Board -> State
+getState pos board = Dead
 
--- Get list if cell neighbours by its position in array and array size
+-- Get list of cell neighbours by its position in array and array size
 neighbours :: Int -> Int -> [Int]
 neighbours size pos = []
+
+-- Count alive neighbours of cell
+countAliveNeighbours :: Board -> [Int] -> Int
+countAliveNeighbours board neighbours = 0
 
 -- Update cell state by its current state and neighbours' states
 updateCell :: State -> Int -> State
 updateCell state aliveNeighbours = state
+
+-- Check if all cells died :c
+checkEndGame :: Board -> Bool
+checkEndGame board = False
 
 -- Update all cells on board
 updateBoard :: Float -> Board -> Board
@@ -51,7 +60,7 @@ drawApp board = Blank
 
 -- Handle IO events
 handleEvent :: Event -> Board -> Board
-handleEvent _ state = state
+handleEvent _ board = board
 
 run :: IO ()
 run = do
