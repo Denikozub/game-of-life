@@ -88,8 +88,8 @@ drawApp (Board size cells) = Pictures [
    | j <- [0..(size^2 - 1)]]
   where
     squareSize = screenSize `div` size
-    upperLeftX = -500
-    upperLeftY = 500
+    upperLeftX = - (screenSize `div` 2)
+    upperLeftY = screenSize `div` 2
 
 toFloat :: [(Int, Int)] -> [(Float, Float)]
 toFloat [] = []
