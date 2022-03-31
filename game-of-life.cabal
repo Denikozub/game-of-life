@@ -23,7 +23,9 @@ source-repository head
 
 library
   exposed-modules:
+      Consts
       GameOfLife
+      Indexing
   other-modules:
       Paths_game_of_life
   hs-source-dirs:
