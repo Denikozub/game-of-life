@@ -4,6 +4,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import Text.Read
 import Indexing
 import Consts
+import System.IO
 
 
 data State = Alive | Dead deriving Eq
@@ -21,14 +22,14 @@ setBoard :: String -> Either Error Board
 setBoard str =
   let (size_str : cells) = lines str
   in case readMaybe size_str :: Maybe Int of
-    Nothing -> Left $ ConfigurationError "Size required on line 1"
+    Nothing -> Left $ ConfigurationError dimErrorMsg
     Just size -> do
       if size < 3 
-        then Left $ SizeError "Size must be >= 3"
+        then Left $ SizeError dimRestrMsg
         else if (length cells) /= size^2
-          then Left $ ConfigurationError "First line should be followed up with size^2 lines"
+          then Left $ ConfigurationError lineCountMsg
           else if not $ all (\x -> x) (map (\x -> (x == "0") || (x == "1")) cells)
-            then Left $ ConfigurationError "Each line after #1 should just contain 0 or 1"
+            then Left $ ConfigurationError lineStateMsg
             else Right $ Board size (map (\x -> if x == "1" then Alive else Dead) cells)
 
 -- Count alive neighbours of cell
@@ -84,6 +85,8 @@ handleEvent _ board = board
 
 run :: IO ()
 run = do
+  hSetBuffering stdout NoBuffering
+  putStr "Specify board file: "
   boardConfFile <- getLine
   configuration <- readFile boardConfFile
   case setBoard configuration of
