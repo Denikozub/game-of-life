@@ -9,16 +9,14 @@ import System.IO
 
 data State = Alive | Dead deriving Eq
 
-data Board = Board {
-    size :: Int,
-    cells :: [State]
-  }
+data Board = Board Int [State]
 
 data Error = ConfigurationError String | SizeError String
 
 
 -- Parse text and get board configuration
 setBoard :: String -> Either Error Board
+setBoard [] = Left $ ConfigurationError emptyBoardMsg
 setBoard str =
   let (size_str : cells) = lines str
   in case readMaybe size_str :: Maybe Int of
@@ -26,7 +24,7 @@ setBoard str =
     Just size -> do
       if size < 3 
         then Left $ SizeError dimRestrMsg
-        else if (length cells) /= size^2
+        else if (length cells) /= size * size
           then Left $ ConfigurationError lineCountMsg
           else if not $ all (\x -> x) (map (\x -> (x == "0") || (x == "1")) cells)
             then Left $ ConfigurationError lineStateMsg
@@ -46,31 +44,32 @@ updateCell _ _ = Dead
 
 -- Check if all cells died :c
 checkEndGame :: Board -> Bool
-checkEndGame board@(Board size cells) = (countAliveNeighbours board [0..(size^2 - 1)]) == 0
+checkEndGame board@(Board size _) = (countAliveNeighbours board [0..(size * size - 1)]) == 0
 
 -- Update all cells on board
 updateBoard :: Float -> Board -> Board
 updateBoard _ board@(Board size cells) = 
   Board size (
                map 
-               (\i -> updateCell (cells !! i) (countAliveNeighbours board (neighbours size i)))
-               [0..(size^2 - 1)]
+               (\i -> updateCell (cells !! i) (countAliveNeighbours board (findNeighbours size i)))
+               [0..(size * size - 1)]
              )
 
 -- Get cell state by its position in array
 getState :: Int -> Board -> State
 getState pos (Board size (x:xs)) | pos > 0 = getState (pos - 1) (Board size xs)
                                  | otherwise = x
+getState _ _ = Dead
 
 -- Draw a picture of current board state
 drawApp :: Board -> Picture
-drawApp board@(Board size cells) = Pictures [
+drawApp board@(Board size _) = Pictures [
   Color (if (getState j board) == Dead then deadColor else aliveColor) $ Polygon $ toFloat
     [(upperLeftX + (j `mod` size) * squareSize, upperLeftY - (j `div` size) * squareSize),
     (upperLeftX + (j `mod` size + 1) * squareSize, upperLeftY - (j `div` size) * squareSize),
     (upperLeftX + (j `mod` size + 1) * squareSize, upperLeftY - (j `div` size + 1) * squareSize),
     (upperLeftX + (j `mod` size) * squareSize, upperLeftY - (j `div` size + 1) * squareSize)]
-    | j <- [0..(size^2 - 1)]]
+    | j <- [0..(size * size - 1)]]
   where
     squareSize = screenSize `div` size
     upperLeftX = - (screenSize `div` 2)

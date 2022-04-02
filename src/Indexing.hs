@@ -1,8 +1,8 @@
 module Indexing where
 
 -- Get list of cell neighbours by its position in array and array size
-neighbours :: Int -> Int -> [Int]
-neighbours size pos = (horisontal size pos) ++ (vertical size pos) ++ (left_bottom size pos) ++
+findNeighbours :: Int -> Int -> [Int]
+findNeighbours size pos = (horisontal size pos) ++ (vertical size pos) ++ (left_bottom size pos) ++
   (right_bottom size pos) ++ (left_upper size pos) ++ (right_upper size pos)
   where
     horisontal, vertical, left_bottom, right_bottom, left_upper, right_upper :: Int -> Int -> [Int]
