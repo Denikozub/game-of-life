@@ -5,14 +5,10 @@ import Text.Read
 import Indexing
 import Consts
 import System.IO
+import Interface
 
-
-data State = Alive | Dead deriving Eq
-
-data Board = Board Int [State]
 
 data Error = ConfigurationError String | SizeError String
-
 
 -- Parse text and get board configuration
 setBoard :: String -> Either Error Board
@@ -77,6 +73,7 @@ drawApp board@(Board size _) = Pictures [
     toFloat :: [(Int, Int)] -> [(Float, Float)]
     toFloat [] = []
     toFloat ((a, b) : xs) = (fromIntegral a :: Float, fromIntegral b :: Float) : (toFloat xs)
+
 
 -- Handle IO events
 handleEvent :: Event -> Board -> Board
