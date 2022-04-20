@@ -27,6 +27,7 @@ library
       Database
       GameOfLife
       Indexing
+      Types
   other-modules:
       Paths_game_of_life
   hs-source-dirs:
