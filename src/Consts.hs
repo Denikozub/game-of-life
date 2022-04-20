@@ -22,5 +22,8 @@ dimRestrMsg = "Size must be >= 3"
 lineCountMsg = "First line should be followed up with size^2 lines"
 lineStateMsg = "Each line after #1 should just contain 0 or 1"
 
-dbName :: String
+dbName, boardTable, cellsTable, settingsTable :: String
 dbName = "sqlite.db"
+boardTable = "boards"
+cellsTable = "cells"
+settingsTable = "settings"
