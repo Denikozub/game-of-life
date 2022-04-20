@@ -22,6 +22,7 @@ dependencies:
 - base >= 4.7 && < 5
 - gloss
 - sqlite-simple
+- text
 
 library:
   source-dirs: src
