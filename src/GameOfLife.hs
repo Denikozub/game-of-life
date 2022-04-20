@@ -3,15 +3,10 @@ module GameOfLife where
 import Graphics.Gloss.Interface.Pure.Game
 import Text.Read
 import Indexing
-import Consts
 import System.IO
 
-
-data State = Alive | Dead deriving Eq
-
-data Board = Board Int [State]
-
-data Error = ConfigurationError String | SizeError String
+import Types
+import Consts
 
 
 -- Parse text and get board configuration
