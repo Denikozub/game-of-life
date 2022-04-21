@@ -9,23 +9,16 @@ import qualified Data.Text as T
 import Consts
 import Types
 
-strToColor :: String -> Maybe Color
-strToColor "RGBA 0.0 0.0 0.0 1.0" = Just black
-strToColor "RGBA 1.0 1.0 1.0 1.0" = Just white
-strToColor "RGBA 1.0 0.0 0.0 1.0" = Just red
-strToColor "RGBA 0.0 1.0 0.0 1.0" = Just green
-strToColor "RGBA 0.0 0.0 1.0 1.0" = Just blue
-strToColor "RGBA 1.0 1.0 0.0 1.0" = Just yellow
-strToColor "RGBA 0.0 1.0 1.0 1.0" = Just cyan
-strToColor "RGBA 1.0 0.0 1.0 1.0" = Just magenta
-strToColor "RGBA 1.0 0.0 0.5 1.0" = Just rose
-strToColor "RGBA 0.5 0.0 1.0 1.0" = Just violet
-strToColor "RGBA 0.0 0.5 1.0 1.0" = Just azure
-strToColor "RGBA 0.0 1.0 0.5 1.0" = Just aquamarine
-strToColor "RGBA 0.5 1.0 0.0 1.0" = Just chartreuse
-strToColor "RGBA 1.0 0.5 0.0 1.0" = Just orange
-strToColor _ = Nothing
 
+{-
+CREATE TABLE boards (id INTEGER PRIMARY KEY, size INTEGER)
+CREATE TABLE cells (id INTEGER REFERENCES boards(id), alive_pos INTEGER)
+CREATE TABLE settings (id INTEGER PRIMARY KEY REFERENCES boards(id),
+                       fps INTEGER,
+                       bg_color Text,
+                       dead_color text,
+                       alive_color Text)
+-}
 
 -- Save board and its ID to Boards table
 -- Also save default settings to Settings table
@@ -47,15 +40,26 @@ dbSaveBoard id_ (Board size cells) = do
 dbGetBoardIDs :: IO[Int]
 dbGetBoardIDs = do
   conn <- open dbName
+  ids <- query_ conn (Query $ T.pack $ "SELECT id FROM " ++ boardTable) :: IO [Only Int]
   close conn
-  return []
+  return $ map fromOnly ids
 
 -- Get board by its ID from Boards table
-dbGetBoard :: Int -> IO Board
-dbGetBoard _ = do
+dbGetBoard :: Int -> IO (Either Types.Error Board)
+dbGetBoard id_ = do
   conn <- open dbName
-  close conn
-  return $ Board 0 []
+  sizeOnly <- query_ conn (Query $ T.pack $ "SELECT size FROM " ++
+    boardTable ++ " WHERE id = " ++ (show id_)) :: IO [Only Int]
+  case sizeOnly of
+    [] -> return $ Left $ IdError boardIdMsg
+    (x:_) -> do
+      let size = fromOnly x
+      aliveCellsOnly <- query_ conn (Query $ T.pack $ "SELECT alive_pos FROM " ++
+        cellsTable ++ " WHERE id = " ++ (show id_)) :: IO [Only Int]
+      let aliveCells = (map fromOnly aliveCellsOnly)
+      let cells = [if elem i aliveCells then Alive else Dead | i <- [0..(size * size - 1)]]
+      close conn
+      return $ Right $ Board size cells
 
 -- Delete row by ID from Boards table
 -- Also delete corresponding row from Settings table
@@ -76,9 +80,31 @@ dbSaveSettings id_ (Settings fps_ bgColor_ deadColor_ aliveColor_) = do
     "', alive_color='" ++ (show aliveColor_) ++ "' WHERE id = " ++ (show id_))
   close conn
 
+strToColor :: String -> Color
+strToColor "RGBA 0.0 0.0 0.0 1.0" = black
+strToColor "RGBA 1.0 1.0 1.0 1.0" = white
+strToColor "RGBA 1.0 0.0 0.0 1.0" = red
+strToColor "RGBA 0.0 1.0 0.0 1.0" = green
+strToColor "RGBA 0.0 0.0 1.0 1.0" = blue
+strToColor "RGBA 1.0 1.0 0.0 1.0" = yellow
+strToColor "RGBA 0.0 1.0 1.0 1.0" = cyan
+strToColor "RGBA 1.0 0.0 1.0 1.0" = magenta
+strToColor "RGBA 1.0 0.0 0.5 1.0" = rose
+strToColor "RGBA 0.5 0.0 1.0 1.0" = violet
+strToColor "RGBA 0.0 0.5 1.0 1.0" = azure
+strToColor "RGBA 0.0 1.0 0.5 1.0" = aquamarine
+strToColor "RGBA 0.5 1.0 0.0 1.0" = chartreuse
+strToColor _ = orange
+
 -- Get settings by their ID from Settings table
-dbGetSettings :: Int -> IO Settings
-dbGetSettings _ = do
+dbGetSettings :: Int -> IO (Either Types.Error Settings)
+dbGetSettings id_ = do
   conn <- open dbName
-  close conn
-  return $ Settings fps bgColor deadColor aliveColor
+  settings <- query_ conn (Query $ T.pack $ "SELECT fps, bg_color, dead_color, alive_color FROM "
+    ++ settingsTable ++ " WHERE id = " ++ (show id_)) :: IO [(Int, String, String, String)]
+  case settings of
+    [] -> return $ Left $ IdError settingsIdMsg
+    ((fps_, bgColor_, deadColor_, aliveColor_) : _) -> do
+      close conn
+      return $ Right $ 
+        Settings fps_ (strToColor bgColor_) (strToColor deadColor_) (strToColor aliveColor_)

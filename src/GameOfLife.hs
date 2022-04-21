@@ -84,7 +84,6 @@ run = do
   boardConfFile <- getLine
   configuration <- readFile boardConfFile
   case setBoard configuration of
-    Left (ConfigurationError message) -> putStrLn message
-    Left (SizeError message) -> putStrLn message
+    Left err -> print err
     Right board -> do
       play displayMode bgColor fps board drawApp handleEvent updateBoard
