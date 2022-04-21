@@ -23,7 +23,6 @@ dependencies:
 - gloss
 - sqlite-simple
 - text
-- random
 
 library:
   source-dirs: src

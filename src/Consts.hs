@@ -6,10 +6,16 @@ import Graphics.Gloss.Data.Display
 displayMode :: Display
 displayMode = FullScreen
 
-bgColor, deadColor, aliveColor :: Color
+bgColor, deadColor, aliveColor, rightTableColor, leftTableColor :: Color
 bgColor = azure
 deadColor = black
 aliveColor = white
+rightTableColor = yellow
+leftTableColor = green
+
+textShift :: Float
+textShift = 20
+
 
 fps, screenSize :: Int
 fps = 1
