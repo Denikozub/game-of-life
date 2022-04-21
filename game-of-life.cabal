@@ -37,6 +37,7 @@ library
       base >=4.7 && <5
     , gloss
     , sqlite-simple
+    , text
   default-language: Haskell2010
 
 executable game-of-life-exe
@@ -51,6 +52,7 @@ executable game-of-life-exe
     , game-of-life
     , gloss
     , sqlite-simple
+    , text
   default-language: Haskell2010
 
 test-suite game-of-life-test
@@ -66,4 +68,5 @@ test-suite game-of-life-test
     , game-of-life
     , gloss
     , sqlite-simple
+    , text
   default-language: Haskell2010
