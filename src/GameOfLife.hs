@@ -59,13 +59,6 @@ getState pos (Board size (x:xs)) | pos > 0 = getState (pos - 1) (Board size xs)
                                  | otherwise = x
 getState _ _ = Dead
 
-{-[Color (if i <= 1 then rightTableColor else leftTableColor) $ Polygon $ toFloat
-      [(upperLeftX - 50, upperLeftY - 50*i),
-      (upperLeftX, upperLeftY - 50*i),
-      (upperLeftX, upperLeftY - 50*(i+1)),
-      (upperLeftX - 50, upperLeftY - 50*(i+1))]])
-    | i <- [0..3],-}
-
 -- Draw a picture of current board state
 drawApp :: Board -> IO Picture
 drawApp board@(Board size _) = do
@@ -79,22 +72,27 @@ drawApp board@(Board size _) = do
         (upperLeftX + (j `mod` size) * squareSize, upperLeftY - (j `div` size + 1) * squareSize)]
         | j <- [0..(size * size - 1)]], 
     Pictures [
-      Color (if i `mod` 2 == 0 then rightTableColor else leftTableColor) $ Polygon $ toFloat
-        [(leftAnchor, upperLeftY - 100 - 50*i),
-        (leftAnchor + 50, upperLeftY - 100 - 50*i),
-        (leftAnchor + 50, upperLeftY - 100 - 50*(i+1)),
-        (leftAnchor, upperLeftY - 100 - 50*(i+1))]
+      Color (if i `mod` 2 == 0 then chartreuse else aquamarine) $ Polygon $ toFloat
+        [(leftXAnchor, leftYAnchor - buttonSize*i),
+        (leftXAnchor + buttonSize, leftYAnchor - buttonSize*i),
+        (leftXAnchor + buttonSize, leftYAnchor - buttonSize*(i+1)),
+        (leftXAnchor, leftYAnchor - buttonSize*(i+1))]
         | i <- [0..((length ids) - 1)]], 
-    Pictures [
-      Color chartreuse $ Polygon $ toFloat
-        [(rightAnchor, upperLeftY - 100 - 50*k),
-        (rightAnchor + 50, upperLeftY - 100 - 50*k),
-        (rightAnchor + 50, upperLeftY - 100 - 50*(k+1)),
-        (rightAnchor, upperLeftY - 100 - 50*(k+1))]
-        | k <- [0..0]]]
+    Color magenta $ Polygon $ toFloat
+        [(rightXAnchor, leftYAnchor),
+        (rightXAnchor + buttonSize, leftYAnchor),
+        (rightXAnchor + buttonSize, leftYAnchor - buttonSize),
+        (rightXAnchor, leftYAnchor - buttonSize)],
+    Color black $ Translate (fromIntegral (rightXAnchor + buttonSize + 10) :: Float) 
+      (fromIntegral (leftYAnchor - buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "GOD MODE"),
+    Color black $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
+      (fromIntegral (leftYAnchor - buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "LIST OF"),
+    Color black $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
+      (fromIntegral (leftYAnchor - 2*buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "BOARDS")]
     where
-      leftAnchor = - (screenSize `div` 2) - 100
-      rightAnchor = screenSize `div` 2 + 50
+      leftXAnchor = - (screenSize `div` 2) - 2*buttonSize
+      rightXAnchor = screenSize `div` 2 + buttonSize
+      leftYAnchor = screenSize `div` 2 - 2*buttonSize
       squareSize = screenSize `div` size
       upperLeftX = - (screenSize `div` 2)
       upperLeftY = screenSize `div` 2
@@ -103,30 +101,28 @@ drawApp board@(Board size _) = do
       toFloat ((a, b) : xs) = 
         (fromIntegral a :: Float, fromIntegral b :: Float) : (toFloat xs)
 
-{-Pictures [
-      Color leftTableColor $ Translate 100 0 txt2]-}
---txt2 = Scale 0.1 0.1 (Text "Hi")
 
 -- Handle IO events
 handleEvent :: Event -> Board -> IO Board
 handleEvent (EventKey (MouseButton LeftButton) Down _ (x, y)) board@(Board size cells) = do
   ids <- dbGetBoardIDs
-  if (x >= (fromIntegral leftAnchor :: Float)) && 
-    (x <= (fromIntegral (leftAnchor + 50) :: Float)) &&
-    (y <= (fromIntegral (upperLeftY - 100) :: Float)) &&
-    (y >= (fromIntegral (upperLeftY - 100 - (length ids)*50) :: Float)) 
+  if (x >= (fromIntegral leftXAnchor :: Float)) && 
+    (x <= (fromIntegral (leftXAnchor + buttonSize) :: Float)) &&
+    (y <= (fromIntegral leftYAnchor :: Float)) &&
+    (y >= (fromIntegral (leftYAnchor - (length ids)*buttonSize) :: Float)) 
   then do
-    eitherNewBoard <- dbGetBoard $ ids !! ((upperLeftY - 100 - (round y)) `div` 50)
+    eitherNewBoard <- 
+      dbGetBoard $ ids !! ((upperLeftY - 2*buttonSize - (round y)) `div` buttonSize)
     case eitherNewBoard of
       Left err -> do
         print err
         return board
       Right newBoard -> return newBoard
   else 
-    if (x >= (fromIntegral rightAnchor :: Float)) && 
-      (x <= (fromIntegral (rightAnchor + 50) :: Float)) &&
-      (y <= (fromIntegral (upperLeftY - 100) :: Float)) &&
-      (y >= (fromIntegral (upperLeftY - 150) :: Float)) 
+    if (x >= (fromIntegral rightXAnchor :: Float)) && 
+      (x <= (fromIntegral (rightXAnchor + buttonSize) :: Float)) &&
+      (y <= (fromIntegral leftYAnchor :: Float)) &&
+      (y >= (fromIntegral (leftYAnchor - buttonSize) :: Float)) 
     then do
       rndGen <- newStdGen
       let (cell, _) = randomR (0, size * size - 1) rndGen
@@ -135,13 +131,13 @@ handleEvent (EventKey (MouseButton LeftButton) Down _ (x, y)) board@(Board size 
     else
       return board
   where 
-    leftAnchor = - (screenSize `div` 2) - 100
-    rightAnchor = screenSize `div` 2 + 50
+    leftXAnchor = - (screenSize `div` 2) - 2*buttonSize
+    rightXAnchor = screenSize `div` 2 + buttonSize
+    leftYAnchor = screenSize `div` 2 - 2*buttonSize
     upperLeftY = screenSize `div` 2
 handleEvent _ board = do
   print ""
   return board
-    --upperLeftY = screenSize `div` 2
   
 
 
