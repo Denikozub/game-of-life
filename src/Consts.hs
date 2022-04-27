@@ -6,10 +6,13 @@ import Graphics.Gloss.Data.Display
 displayMode :: Display
 displayMode = FullScreen
 
-bgColor, deadColor, aliveColor :: Color
+bgColor, deadColor, aliveColor, buttonColor_1, buttonColor_2, godModeColor :: Color
 bgColor = azure
 deadColor = black
 aliveColor = white
+buttonColor_1 = chartreuse
+buttonColor_2 = aquamarine
+godModeColor = magenta
 
 buttonSize :: Int
 buttonSize = 50

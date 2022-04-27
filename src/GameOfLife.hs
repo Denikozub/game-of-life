@@ -46,7 +46,6 @@ checkEndGame board@(Board size _) = (countAliveNeighbours board [0..(size * size
 -- Update all cells on board
 updateBoard :: Float -> Board -> IO Board
 updateBoard _ board@(Board size cells) = do
-  print ""
   return $ Board size (
               map 
               (\i -> updateCell (cells !! i) (countAliveNeighbours board (findNeighbours size i)))
@@ -72,22 +71,22 @@ drawApp board@(Board size _) = do
         (upperLeftX + (j `mod` size) * squareSize, upperLeftY - (j `div` size + 1) * squareSize)]
         | j <- [0..(size * size - 1)]], 
     Pictures [
-      Color (if i `mod` 2 == 0 then chartreuse else aquamarine) $ Polygon $ toFloat
+      Color (if i `mod` 2 == 0 then buttonColor_1 else buttonColor_2) $ Polygon $ toFloat
         [(leftXAnchor, leftYAnchor - buttonSize*i),
         (leftXAnchor + buttonSize, leftYAnchor - buttonSize*i),
         (leftXAnchor + buttonSize, leftYAnchor - buttonSize*(i+1)),
         (leftXAnchor, leftYAnchor - buttonSize*(i+1))]
         | i <- [0..((length ids) - 1)]], 
-    Color magenta $ Polygon $ toFloat
+    Color godModeColor $ Polygon $ toFloat
         [(rightXAnchor, leftYAnchor),
         (rightXAnchor + buttonSize, leftYAnchor),
         (rightXAnchor + buttonSize, leftYAnchor - buttonSize),
         (rightXAnchor, leftYAnchor - buttonSize)],
-    Color black $ Translate (fromIntegral (rightXAnchor + buttonSize + 10) :: Float) 
+    Color deadColor $ Translate (fromIntegral (rightXAnchor + buttonSize + 10) :: Float) 
       (fromIntegral (leftYAnchor - buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "GOD MODE"),
-    Color black $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
+    Color deadColor $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
       (fromIntegral (leftYAnchor - buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "LIST OF"),
-    Color black $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
+    Color deadColor $ Translate (fromIntegral (leftXAnchor - 4*buttonSize) :: Float) 
       (fromIntegral (leftYAnchor - 2*buttonSize + 10) :: Float) $ Scale 0.3 0.3 (Text $ "BOARDS")]
     where
       leftXAnchor = - (screenSize `div` 2) - 2*buttonSize
@@ -136,7 +135,6 @@ handleEvent (EventKey (MouseButton LeftButton) Down _ (x, y)) board@(Board size 
     leftYAnchor = screenSize `div` 2 - 2*buttonSize
     upperLeftY = screenSize `div` 2
 handleEvent _ board = do
-  print ""
   return board
   
 
